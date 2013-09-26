@@ -12,12 +12,22 @@ ALL = DEFENCE + FORWARD + GOAL
 
 
 
+class Player():
+
+	def __init__(self, name):
+		self.name = name
+		self.score = 0
+
+	def __str__(self):
+		return '%s %s' % (self.name, self.score)
+
 
 class SkaterList():
 
-	def __init__(self, year):
+	def __init__(self, htmllist, year):
 		self.year = year
-		self.skaters = []
+		scheme = players.parse_stat_schema(htmllist)
+		self.skaters = players.create_skater_list(htmllist, scheme)
 		self.last_sorted = ''
 
 	def add_player(self, player):
@@ -31,7 +41,7 @@ class SkaterList():
 	def trim_by_pos_and_gp(self, n, pos, mingp):
 		l = []
 		i = 0
-		while i < n and i < len(self.skaters):
+		while len(l) < n and i < len(self.skaters):
 			if self.skaters[i].gp >= mingp and self.skaters[i].pos in pos:
 				l.append(self.skaters[i])
 			i += 1
@@ -96,31 +106,27 @@ def get_stat_html_page(host):
 
 
 
-
-
 if __name__ == "__main__":
 
 	host13 = 'http://www.hockey-reference.com/leagues/NHL_2013_skaters.html'
 	host12 = 'http://www.hockey-reference.com/leagues/NHL_2012_skaters.html'
 	host11 = 'http://www.hockey-reference.com/leagues/NHL_2011_skaters.html'
 
-	text = open('ps1.txt').read().split()
-	# text13 = open('12-2.txt').read().split()
-	# text = get_stat_html_page(host13)
+	fpicks = {}
+	dpicks = {}
 
-	players12 = players.create_player_list(text, '')
-	# players13 = create_player_list(text13, '2013')
+	text = get_stat_html_page(host13)
+	players = SkaterList(text, '')
 
-	print 'd pts'
-	for p in players12.d_top_pts():
+	for p in players.d_top_pts(n=30):
 		print p.printattr('pts')
 
 	print '\nd ppg'
-	for p in players12.d_top_ptspg():
+	for p in players.d_top_ptspg(n=30):
 		print p.printattr('ptspg')
 
 	print '\nd ppg min gp'
-	for p in players12.d_top_ptspg_with_min_gp(mingp=10):
+	for p in players.d_top_ptspg_with_min_gp(n=30, mingp=10):
 		print p.printattr('ptspg')
 
 	# st = StatList()
